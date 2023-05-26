@@ -14,7 +14,6 @@ const rl = readline.createInterface(
   }
 )
 
-
 const repl = () => {
   rl.question("user> ", line => {
     console.log(rep(line));
@@ -22,12 +21,4 @@ const repl = () => {
   })  
 }
 
-const main = () => {
-  stdout.write("user> ");
-  stdin.on("data", (chunk) => {
-    stdout.write(rep(chunk))
-    stdout.write("user> ");
-  })
-};
-
-main();
+repl();
