@@ -18,7 +18,12 @@ const rl = readline.createInterface(
 
 const repl = () => {
   rl.question("user> ", line => {
-    console.log(rep(line));
+    try {
+      console.log(rep(line));
+    }
+    catch (error) {
+      console.log(error);
+    }
     repl();
   })  
 }
