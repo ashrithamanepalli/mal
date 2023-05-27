@@ -28,11 +28,15 @@ const read_atom = reader => {
   const regex = /^-?[\d]+$/;
 
   if (token.match(regex)) {
-    return new MalValue(parseInt(token));
+    return parseInt(token);
   }
 
-  if (token === "true" | token === "false") {
-    return new MalBool(token);
+  if (token === "true") {
+    return true;
+  }
+    
+  if( token === "false") {
+    return false;
   }
 
   if (token === "nil") {
