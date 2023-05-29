@@ -1,10 +1,11 @@
 const {
   MalSymbol,
-  MalValue,
   MalList,
   MalVector,
   MalNil,
-  MalBool } = require('./types.js');
+  MalMap,
+  MalString,
+  MalKeyWord} = require('./types.js');
 
 class Reader {
   constructor(tokens) {
@@ -21,14 +22,28 @@ class Reader {
     this.position++;
     return current;
   }
+
+  length() {
+    return this.tokens.length;
+  }
 }
 
 const read_atom = reader => {
   const token = reader.next();
-  const regex = /^-?[\d]+$/;
+  const digitRegex = /^-?[\d]+$/;
+  const keywordRegex = /^:.*/;
+  const stringRegex = /^"?[A-Za-z]+"?$/;
 
-  if (token.match(regex)) {
+  if (token.match(digitRegex)) {
     return parseInt(token);
+  }
+  
+  if (token.match(stringRegex)) {
+    return new MalString(token);
+  }
+  
+  if (token.match(keywordRegex)) {
+    return new MalKeyWord(token);
   }
 
   if (token === "true") {
@@ -71,6 +86,18 @@ const read_vector = reader => {
   return new MalVector(ast);
 };
 
+const validateMap = ast => {
+  if ((ast.length % 2) !== 0) {
+    throw "map literal must contain an even number of forms";
+  }
+};
+
+const read_map = reader => {
+  const ast = read_seq(reader, "}");
+  validateMap(ast);
+  return new MalMap(ast);
+};
+
 const read_form = (reader) => {
   const token = reader.peek();
   switch (token) {
@@ -78,6 +105,8 @@ const read_form = (reader) => {
       return read_list(reader);
     case "[":
       return read_vector(reader);
+    case "{":
+      return read_map(reader);
     default:
       return read_atom(reader);
   }

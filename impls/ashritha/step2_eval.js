@@ -2,7 +2,7 @@ const { stdin, stdout } = require("process");
 const readline = require("readline");
 const { read_str } = require("./reader");
 const { pr_str } = require("./printer");
-const { MalSymbol, MalList, MalVector } = require("./types");
+const { MalSymbol, MalList, MalVector, MalMap } = require("./types");
 
 const env = {
   "+": (...args) => args.reduce((a, b)=> a + b),
@@ -26,6 +26,11 @@ const eval_ast = (ast, env) => {
     return new MalVector(newAst);
   }
 
+  if (ast instanceof MalMap) {
+    const newAst = ast.value.map(x => EVAL(x, env));
+    return new MalMap(newAst);
+  }
+
   return ast;
 }; 
 
@@ -42,7 +47,7 @@ const EVAL = (ast, env) => {
 
 const PRINT = malValue => pr_str(malValue);
 
-const rep = (arguments) => PRINT(EVAL(READ(arguments), env));
+const rep = arguments => PRINT(EVAL(READ(arguments), env));
 
 const rl = readline.createInterface(
   {
