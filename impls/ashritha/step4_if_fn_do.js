@@ -54,10 +54,11 @@ const EVAL = (ast, env) => {
     
     case "if":
       const predicate_value = EVAL(ast.value[1], env);
+
       if (predicate_value !== false && !(predicate_value instanceof MalNil)) {
         return EVAL(ast.value[2], env)
       }
-      if (ast.value[3]) {
+      if (ast.value[3] !== undefined) {
         return EVAL(ast.value[3], env)
       }
       return new MalNil();
@@ -68,6 +69,9 @@ const EVAL = (ast, env) => {
       });
       const lastElement = ast.value.slice(-1)[0];
       return EVAL(lastElement, env);
+    
+    case "fn*":
+      
   }
 
   const [fn, ...args] = eval_ast(ast, env).value;
@@ -76,14 +80,39 @@ const EVAL = (ast, env) => {
 
 const PRINT = malValue => pr_str(malValue);
 
+const multipleCheck = (args, predicate) => {
+  const result = [];
+  for (let index = 0; index < args.length - 1; index++) {
+    result.push(predicate(args[index], args[index + 1]))
+  }
+  return result.every((a)=>a === true);
+}
+
 const env = new Env();
 env.set(new MalSymbol("+"), (...args) => args.reduce((a, b) => a + b));
 env.set(new MalSymbol("*"), (...args) => args.reduce((a, b) => a * b));
 env.set(new MalSymbol("-"), (...args) => args.reduce((a, b) => a - b));
 env.set(new MalSymbol("/"), (...args) => args.reduce((a, b) => a / b));
 env.set(new MalSymbol("="), (...args) => args.every((a) => (a === args[0])));
-env.set(new MalSymbol("println"), (...args) => {
+env.set(new MalSymbol("<"), (...args) => multipleCheck(args, (a,b) => a < b));
+env.set(new MalSymbol(">"), (...args) => multipleCheck(args, (a,b) => a > b));
+env.set(new MalSymbol("<="), (...args) => multipleCheck(args, (a,b) => a <= b));
+env.set(new MalSymbol(">="), (...args) => multipleCheck(args, (a,b) => a >= b));
+env.set(new MalSymbol("list"), (...args) => new MalList(args));
+env.set(new MalSymbol("list?"), arg => arg instanceof MalList);
+env.set(new MalSymbol("empty?"), arg => arg.isEmpty());
+env.set(new MalSymbol("count"), arg => {
+  if (arg instanceof MalMap) {
+    return arg.value.length / 2;
+  }
+  return arg.value.length;
+});
+env.set(new MalSymbol("prn"), (...args) => {
   console.log(...args);
+  return new MalNil();
+});
+env.set(new MalSymbol("println"), (...args) => {
+  console.log(...args, "\n");
   return new MalNil();
 });
 

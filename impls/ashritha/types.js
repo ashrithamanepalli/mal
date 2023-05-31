@@ -36,7 +36,11 @@ class MalList extends MalValue {
   }
 
   pr_str() {
-    return "(" + this.value.map(x => x.pr_str()).join(" ") + ")";
+    return "(" + this.value.map(x =>
+    {
+      if (x instanceof MalValue) return x.pr_str();
+      return x.toString();
+    }).join(" ") + ")";
   }
 }
 
@@ -84,6 +88,10 @@ class MalMap extends MalValue {
 class MalVector extends MalValue{
   constructor(value) {
     super(value)
+  }
+
+  isEmpty() {
+    return this.value.length === 0; 
   }
 
   pr_str() {
