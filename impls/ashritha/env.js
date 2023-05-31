@@ -11,6 +11,12 @@ class Env {
     return malValue;
   }
 
+  bind(args) {
+    args.forEach((element, index) => {
+      this.set(this.binds.value[index],element);
+    });
+  }
+
   find(symbol) {
     if (this.data[symbol.value]) {
       return this;

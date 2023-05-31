@@ -44,6 +44,20 @@ class MalList extends MalValue {
   }
 }
 
+class MalFunction extends MalValue {
+  constructor(value) {
+    super(value)
+  }
+
+  pr_str() {
+    return "#<function>";
+  }
+
+  apply(_, args) {
+    return this.value(...args);
+  }
+}
+
 class MalMap extends MalValue {
   constructor(value) {
     super(value);
@@ -124,5 +138,6 @@ class MalBool extends MalValue {
 }
 
 module.exports = {
-  MalSymbol, MalValue, MalList, MalVector, MalNil, MalBool, MalMap, MalString, MalKeyWord
+  MalSymbol, MalValue, MalList, MalVector, MalNil, MalBool, MalMap, MalString, MalKeyWord,
+  MalFunction
 };

@@ -2,7 +2,7 @@ const { stdin, stdout } = require("process");
 const readline = require("readline");
 const { read_str } = require("./reader");
 const { pr_str } = require("./printer");
-const { MalSymbol, MalList, MalVector, MalMap, MalNil, MalString } = require("./types");
+const { MalSymbol, MalList, MalVector, MalMap, MalNil, MalString, MalFunction } = require("./types");
 const {Env} = require('./env');
 
 
@@ -71,7 +71,13 @@ const EVAL = (ast, env) => {
       return EVAL(lastElement, env);
     
     case "fn*":
-      
+      const func = (...args) => {
+        [, binds, exprs] = ast.value;
+        const fnEnv = new Env(env, binds, exprs);
+        fnEnv.bind(args);
+        return EVAL(exprs, fnEnv);
+      };
+      return new MalFunction(func);
   }
 
   const [fn, ...args] = eval_ast(ast, env).value;
@@ -101,9 +107,18 @@ env.set(new MalSymbol(">="), (...args) => multipleCheck(args, (a,b) => a >= b));
 env.set(new MalSymbol("list"), (...args) => new MalList(args));
 env.set(new MalSymbol("list?"), arg => arg instanceof MalList);
 env.set(new MalSymbol("empty?"), arg => arg.isEmpty());
+env.set(new MalSymbol("not"), arg => {
+  if (arg === false || arg instanceof MalNil) {
+    return true;
+  }
+  return false;
+});
 env.set(new MalSymbol("count"), arg => {
   if (arg instanceof MalMap) {
     return arg.value.length / 2;
+  }
+  if (arg instanceof MalNil) {
+    return 0;
   }
   return arg.value.length;
 });
