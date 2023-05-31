@@ -32,7 +32,7 @@ const read_atom = reader => {
   const token = reader.next();
   const digitRegex = /^-?[\d]+$/;
   const keywordRegex = /^:.*/;
-  const stringRegex = /^"?[A-Za-z]+"?$/;
+  const stringRegex = /^".*"?$/;
 
   if (token.match(digitRegex)) {
     return parseInt(token);
