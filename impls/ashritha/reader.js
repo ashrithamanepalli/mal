@@ -31,11 +31,16 @@ class Reader {
 const read_atom = reader => {
   const token = reader.next();
   const digitRegex = /^-?[\d]+$/;
+  const floatRegex = /^-?[\d]+.[\d]+$/;
   const keywordRegex = /^:.*/;
   const stringRegex = /^".*"?$/;
 
   if (token.match(digitRegex)) {
     return parseInt(token);
+  }
+  
+  if (token.match(floatRegex)) {
+    return parseFloat(token);
   }
   
   if (token.match(stringRegex)) {

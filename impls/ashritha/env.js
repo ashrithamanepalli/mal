@@ -1,5 +1,5 @@
 class Env {
-  constructor(outer, binds, exprs) {
+  constructor(outer, binds = [], exprs = []) {
     this.outer = outer;
     this.binds = binds;
     this.exprs = exprs;
@@ -18,10 +18,10 @@ class Env {
   }
 
   find(symbol) {
-    if (this.data[symbol.value]) {
+    if (this.data[symbol.value] !== undefined) {
       return this;
     }
-    if (this.outer) {
+    if (this.outer !== undefined) {
       return this.outer.find(symbol);
     }
   }

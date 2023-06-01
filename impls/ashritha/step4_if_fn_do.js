@@ -2,9 +2,8 @@ const { stdin, stdout } = require("process");
 const readline = require("readline");
 const { read_str } = require("./reader");
 const { pr_str } = require("./printer");
-const { MalSymbol, MalList, MalVector, MalMap, MalNil, MalString, MalFunction } = require("./types");
+const { MalSymbol, MalList, MalVector, MalMap, MalNil, MalString, MalFunction, MalValue } = require("./types");
 const {Env} = require('./env');
-
 
 const eval_ast = (ast, env) => {
   if (ast instanceof MalSymbol) {
@@ -31,7 +30,7 @@ const eval_ast = (ast, env) => {
   }
 
   return ast;
-}; 
+};
 
 const READ = str => read_str(str);
 
@@ -99,7 +98,13 @@ env.set(new MalSymbol("+"), (...args) => args.reduce((a, b) => a + b));
 env.set(new MalSymbol("*"), (...args) => args.reduce((a, b) => a * b));
 env.set(new MalSymbol("-"), (...args) => args.reduce((a, b) => a - b));
 env.set(new MalSymbol("/"), (...args) => args.reduce((a, b) => a / b));
-env.set(new MalSymbol("="), (...args) => args.every((a) => (a === args[0])));
+env.set(new MalSymbol("%"), (...args) => args.reduce((a, b) => a % b));
+env.set(new MalSymbol("="), (...args) => {
+  if (args[0] instanceof MalValue) {
+    return args.every((a) => (args[0].isEqual(a)))
+  }
+  return args.every((a) => (a === args[0]))
+});
 env.set(new MalSymbol("<"), (...args) => multipleCheck(args, (a,b) => a < b));
 env.set(new MalSymbol(">"), (...args) => multipleCheck(args, (a,b) => a > b));
 env.set(new MalSymbol("<="), (...args) => multipleCheck(args, (a,b) => a <= b));
@@ -107,6 +112,9 @@ env.set(new MalSymbol(">="), (...args) => multipleCheck(args, (a,b) => a >= b));
 env.set(new MalSymbol("list"), (...args) => new MalList(args));
 env.set(new MalSymbol("list?"), arg => arg instanceof MalList);
 env.set(new MalSymbol("empty?"), arg => arg.isEmpty());
+env.set(new MalSymbol("sumdown"), arg => ((arg * (arg + 1)) / 2));
+env.set(new MalSymbol("str"), (...args) =>new MalString(args.map(arg => arg.toString()).join('')));
+env.set(new MalSymbol("pr-str"), () => { });
 env.set(new MalSymbol("not"), arg => {
   if (arg === false || arg instanceof MalNil) {
     return true;

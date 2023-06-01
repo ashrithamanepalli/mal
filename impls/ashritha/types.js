@@ -1,10 +1,16 @@
+const { isDeepStrictEqual } = require("util");
+
 class MalValue {
   constructor(value) {
     this.value = value;
   }
 
-  pr_str() {
+  toString() {
     return this.value.toString();
+  }
+
+  isEqual(otherValue) {
+    return otherValue instanceof MalValue && otherValue.value === this.value;
   }
 }
 
@@ -12,11 +18,23 @@ class MalSymbol extends MalValue {
   constructor(value) {
     super(value)
   }
+
+  isEqual(otherValue) {
+    return otherValue instanceof MalSymbol && otherValue.value === this.value;
+  }
 }
 
 class MalString extends MalValue {
   constructor(value) {
-    super(value)
+    super(value);
+  }
+
+  toString() {
+    return this.value;
+  }
+
+  isEqual(otherValue) {
+    return otherValue instanceof MalString && otherValue.value === this.value;
   }
 }
 
@@ -24,23 +42,9 @@ class MalKeyWord extends MalValue {
   constructor(value) {
     super(value)
   }
-}
 
-class MalList extends MalValue {
-  constructor(value) {
-    super(value)
-  }
-
-  isEmpty() {
-    return this.value.length === 0; 
-  }
-
-  pr_str() {
-    return "(" + this.value.map(x =>
-    {
-      if (x instanceof MalValue) return x.pr_str();
-      return x.toString();
-    }).join(" ") + ")";
+  isEqual(otherValue) {
+    return otherValue instanceof MalKeyWord && otherValue.value === this.value;
   }
 }
 
@@ -49,16 +53,30 @@ class MalFunction extends MalValue {
     super(value)
   }
 
-  pr_str() {
+  toString() {
     return "#<function>";
   }
 
   apply(_, args) {
     return this.value(...args);
   }
+
+  isEqual(otherValue) {
+    return otherValue instanceof MalFunction && otherValue.value === this.value;
+  }
 }
 
-class MalMap extends MalValue {
+class MalIterator extends MalValue {
+  constructor(value) {
+    super(value);
+  }
+
+  isEqual(otherValue) {
+    return otherValue instanceof MalIterator && isDeepStrictEqual(otherValue.value, this.value);
+  }
+}
+
+class MalMap extends MalIterator {
   constructor(value) {
     super(value);
     this.keyValuePairs = {};
@@ -90,16 +108,16 @@ class MalMap extends MalValue {
     return this.value.length === 0; 
   }
 
-  pr_str() {
+  toString() {
     return "{" + this.value.map(x =>
     {
-      if (x instanceof MalValue) return x.pr_str();
+      if (x instanceof MalValue) return x.toString();
       return x.toString();
     }).join(" ") + "}";
   }
 }
 
-class MalVector extends MalValue{
+class MalVector extends MalIterator {
   constructor(value) {
     super(value)
   }
@@ -108,22 +126,45 @@ class MalVector extends MalValue{
     return this.value.length === 0; 
   }
 
-  pr_str() {
+  toString() {
     return "[" + this.value.map(x =>
     {
-      if (x instanceof MalValue) return x.pr_str();
+      if (x instanceof MalValue) return x.toString();
       return x.toString();
     }).join(" ") + "]";
   }
 }
 
-class MalNil extends MalValue {
-  constructor() {
-   super(null);
+class MalList extends MalIterator {
+  constructor(value) {
+    super(value)
   }
 
-  pr_str() {
+  isEmpty() {
+    return this.value.length === 0; 
+  }
+
+  toString() {
+    return "(" + this.value.map(x =>
+    {
+      if (x instanceof MalValue) return x.toString();
+      return x.toString();
+    }).join(" ") + ")";
+  }
+}
+
+class MalNil extends MalValue {
+  constructor() {
+    super(null);
+    this.value = null;
+  }
+
+  toString() {
     return "nil"
+  }
+
+  isEqual(otherValue) {
+    return otherValue instanceof MalNil && otherValue.value === this.value;
   }
 }
 
@@ -132,8 +173,12 @@ class MalBool extends MalValue {
    super(value);
   }
 
-  pr_str() {
+  toString() {
     return this.value.toString();
+  }
+
+  isEqual(otherValue) {
+    return otherValue instanceof MalBool && otherValue.value === this.value;
   }
 }
 
