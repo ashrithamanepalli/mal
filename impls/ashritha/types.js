@@ -49,8 +49,11 @@ class MalKeyWord extends MalValue {
 }
 
 class MalFunction extends MalValue {
-  constructor(value) {
-    super(value)
+  constructor(doForms, binds, env) {
+    super(doForms);
+    this.value = doForms;
+    this.binds = binds;
+    this.env = env;
   }
 
   toString() {
