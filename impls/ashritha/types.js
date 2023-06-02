@@ -30,7 +30,7 @@ class MalString extends MalValue {
   }
 
   toString() {
-    return this.value;
+    return `"${this.value}"`;
   }
 
   isEqual(otherValue) {

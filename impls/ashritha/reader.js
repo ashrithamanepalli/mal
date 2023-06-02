@@ -44,7 +44,7 @@ const read_atom = reader => {
   }
   
   if (token.match(stringRegex)) {
-    return new MalString(token);
+    return new MalString(token.slice(1, -1));
   }
   
   if (token.match(keywordRegex)) {

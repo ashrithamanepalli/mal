@@ -1,4 +1,4 @@
-const { stdin, stdout } = require("process");
+const { stdin, stdout, nextTick } = require("process");
 const readline = require("readline");
 const { read_str } = require("./reader");
 const { pr_str } = require("./printer");
@@ -23,10 +23,6 @@ const eval_ast = (ast, env) => {
   if (ast instanceof MalMap) {
     const newAst = ast.value.map(x => EVAL(x, env));
     return new MalMap(newAst);
-  }
-  
-  if (ast instanceof MalString) {
-    return ast.value;
   }
 
   return ast;
@@ -93,6 +89,12 @@ const multipleCheck = (args, predicate) => {
   return result.every((a)=>a === true);
 }
 
+const replaceEscapeChars = existingString => {
+  const slashReplace = existingString.replaceAll("\\", "\\\\");
+  const quoteReplace = slashReplace.replaceAll("\"", "\\\"");
+  return quoteReplace;
+}
+
 const env = new Env();
 env.set(new MalSymbol("+"), (...args) => args.reduce((a, b) => a + b));
 env.set(new MalSymbol("*"), (...args) => args.reduce((a, b) => a * b));
@@ -112,9 +114,18 @@ env.set(new MalSymbol(">="), (...args) => multipleCheck(args, (a,b) => a >= b));
 env.set(new MalSymbol("list"), (...args) => new MalList(args));
 env.set(new MalSymbol("list?"), arg => arg instanceof MalList);
 env.set(new MalSymbol("empty?"), arg => arg.isEmpty());
-env.set(new MalSymbol("sumdown"), arg => ((arg * (arg + 1)) / 2));
-env.set(new MalSymbol("str"), (...args) =>new MalString(args.map(arg => arg.toString()).join('')));
-env.set(new MalSymbol("pr-str"), () => { });
+env.set(new MalSymbol("str"), (...args) =>
+{
+  return new MalString(
+    args.map(arg =>  arg instanceof MalValue ? arg.value : arg).join(''))
+});
+env.set(new MalSymbol("pr-str"), (...args) =>
+{
+  return new MalString(
+    args.map(arg => arg instanceof MalValue ?
+      replaceEscapeChars(arg.toString()) :
+      arg).join(' '))
+});
 env.set(new MalSymbol("not"), arg => {
   if (arg === false || arg instanceof MalNil) {
     return true;
@@ -131,11 +142,11 @@ env.set(new MalSymbol("count"), arg => {
   return arg.value.length;
 });
 env.set(new MalSymbol("prn"), (...args) => {
-  console.log(...args);
+  console.log(...args.map(arg => arg instanceof MalValue ? arg.toString() : arg));
   return new MalNil();
 });
 env.set(new MalSymbol("println"), (...args) => {
-  console.log(...args, "\n");
+  console.log(...args.map(arg => arg instanceof MalValue ? arg.value : arg));
   return new MalNil();
 });
 
