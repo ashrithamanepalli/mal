@@ -43,8 +43,8 @@ const handleFn = (ast, env) => {
   return new MalFunction(doForms, binds, env);
 }
 
-const handlerDef = (ast, env, eval) => {
+const handleDef = (ast, env, eval) => {
   return env.set(ast.value[1], eval(ast.value[2], env));
 }
 
-module.exports = { handleDo, handleFn, handleIf, handleLet, handlerDef };
+module.exports = { handleDo, handleFn, handleIf, handleLet, handleDef };

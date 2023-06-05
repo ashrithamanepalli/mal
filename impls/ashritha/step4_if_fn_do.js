@@ -2,7 +2,7 @@ const { stdin, stdout } = require("process");
 const readline = require("readline");
 const { read_str } = require("./reader");
 const { pr_str } = require("./printer");
-const { handleDo, handleFn, handleIf, handleLet, handlerDef} = require("./handlers");
+const { handleDo, handleFn, handleIf, handleLet, handleDef} = require("./handlers");
 const { MalSymbol, MalList, MalVector, MalMap, MalFunction } = require("./types");
 const { Env } = require('./env');
 const { ns } = require('./core.js');
@@ -39,7 +39,7 @@ const EVAL = (ast, env) => {
   
     switch (ast.value[0].value) {
       case "def!":
-        return handlerDef(ast, env, EVAL);
+        return handleDef(ast, env, EVAL);
   
       case "let*":
         [ast, env] = handleLet(ast, env, EVAL); break;

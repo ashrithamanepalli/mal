@@ -60,10 +60,6 @@ class MalFunction extends MalValue {
     return "#<function>";
   }
 
-  apply(_, args) {
-    return this.value(...args);
-  }
-
   isEqual(otherValue) {
     return otherValue instanceof MalFunction && otherValue.value === this.value;
   }
@@ -74,8 +70,32 @@ class MalIterator extends MalValue {
     super(value);
   }
 
+  isEmpty() {
+    return this.value.length === 0;
+  }
+
   isEqual(otherValue) {
     return otherValue instanceof MalIterator && isDeepStrictEqual(otherValue.value, this.value);
+  //   if (!(otherValue instanceof MalIterator)) {
+  //     return false;
+  //   }
+    
+  //   if (!(otherValue.value.length === this.value.length)) {
+  //     return false;
+  //   }
+
+  //   let result = true;
+  //   let index = 0;
+  //   while (result === true && index < this.value.length) {
+  //     if (this.value[index] instanceof MalIterator) {
+  //       result &= this.value[index].isEqual(otherValue.value[index]);
+  //     }
+  //     else {
+  //       result &= isDeepStrictEqual(otherValue.value, this.value);
+  //     }
+  //     index++;
+  //   }
+  //   return result;
   }
 }
 
@@ -107,10 +127,6 @@ class MalMap extends MalIterator {
     return this.getValue(arg);
   }
 
-  isEmpty() {
-    return this.value.length === 0; 
-  }
-
   toString() {
     return "{" + this.value.map(x =>
     {
@@ -125,10 +141,6 @@ class MalVector extends MalIterator {
     super(value)
   }
 
-  isEmpty() {
-    return this.value.length === 0; 
-  }
-
   toString() {
     return "[" + this.value.map(x =>
     {
@@ -141,10 +153,6 @@ class MalVector extends MalIterator {
 class MalList extends MalIterator {
   constructor(value) {
     super(value)
-  }
-
-  isEmpty() {
-    return this.value.length === 0; 
   }
 
   toString() {
@@ -187,5 +195,5 @@ class MalBool extends MalValue {
 
 module.exports = {
   MalSymbol, MalValue, MalList, MalVector, MalNil, MalBool, MalMap, MalString, MalKeyWord,
-  MalFunction
+  MalFunction, MalIterator
 };

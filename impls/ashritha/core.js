@@ -1,4 +1,4 @@
-const { MalList, MalMap, MalNil, MalString, MalValue } = require("./types");
+const { MalList, MalMap, MalNil, MalString, MalValue, MalIterator } = require("./types");
 
 const multipleCheck = (args, predicate) => {
   const result = [];
@@ -12,6 +12,16 @@ const replaceEscapeChars = existingString => {
   const slashReplace = existingString.replaceAll("\\", "\\\\");
   const quoteReplace = slashReplace.replaceAll("\"", "\\\"");
   return quoteReplace;
+}
+
+const strFn = arg => {
+  if (arg instanceof MalIterator) {
+    return arg.toString();
+  }
+  if (arg instanceof MalValue) {
+    return arg.value;
+  }
+  return arg;
 }
 
 const ns = {
@@ -34,13 +44,12 @@ const ns = {
     return args.every((a) => (a === args[0]))
   },
 "str" : (...args) => new MalString
-    (args.map(arg => arg instanceof MalValue ? arg.value : arg).join('')),
+  (args.map(arg => strFn(arg)).join('')),
 "pr-str" : (...args) =>
   {
     return new MalString(
       args.map(arg => arg instanceof MalValue ?
-        replaceEscapeChars(arg.toString())
-        : arg).join(' '))
+        replaceEscapeChars(arg.toString()): arg).join(' '))
   },
 "not" : arg => {
     if (arg === false || arg instanceof MalNil) {
