@@ -28,6 +28,10 @@ class Reader {
   }
 }
 
+const createMalString = (str) => {
+  return new MalString(str.replace(/\\(.)/g, (y, captured) => captured === 'n' ? '\n' : captured));
+}
+
 const read_atom = reader => {
   const token = reader.next();
   const digitRegex = /^-?[\d]+$/;
@@ -44,7 +48,7 @@ const read_atom = reader => {
   }
   
   if (token.match(stringRegex)) {
-    return new MalString(token.slice(1, -1));
+    return createMalString(token.slice(1, -1));
   }
   
   if (token.match(keywordRegex)) {
@@ -103,15 +107,24 @@ const read_map = reader => {
   return new MalMap(ast);
 };
 
+const prependSymbol = (reader, symbolStr) => {
+  reader.next();
+  const symbol = new MalSymbol(symbolStr);
+  const newAst = read_form(reader);
+  return new MalList([symbol, newAst]);
+};
+
 const read_form = (reader) => {
   const token = reader.peek();
-  switch (token) {
+  switch (token[0]) {
     case "(":
       return read_list(reader);
     case "[":
       return read_vector(reader);
     case "{":
       return read_map(reader);
+    case "@":
+      return prependSymbol(reader, 'deref');
     default:
       return read_atom(reader);
   }
@@ -119,7 +132,7 @@ const read_form = (reader) => {
 
 const tokenize = (str) => {
   const re = /[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]*)/g;
-  return [...str.matchAll(re)].map(x => x[1]).slice(0, -1);
+  return [...str.matchAll(re)].map(x => x[1]).slice(0, -1).filter(x=> !x.startsWith(";"));
 };
 
 const read_str = (str) => {

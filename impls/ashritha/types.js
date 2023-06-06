@@ -1,11 +1,20 @@
 const { isDeepStrictEqual } = require("util");
 
+const pr_str = malValue => {
+  // console.log(malValue);
+  if (malValue instanceof MalValue) {
+    return malValue.pr_str(true);
+  }
+
+  return malValue.toString();
+};
+
 class MalValue {
   constructor(value) {
     this.value = value;
   }
 
-  toString() {
+  pr_str() {
     return this.value.toString();
   }
 
@@ -22,6 +31,10 @@ class MalSymbol extends MalValue {
   isEqual(otherValue) {
     return otherValue instanceof MalSymbol && otherValue.value === this.value;
   }
+
+  pr_str() {
+    return this.value;
+  }
 }
 
 class MalString extends MalValue {
@@ -29,7 +42,13 @@ class MalString extends MalValue {
     super(value);
   }
 
-  toString() {
+  pr_str(print_readably = false) {
+    if (print_readably) {
+      return '"' + this.value
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, "\\n") + '"';
+    }
     return `"${this.value}"`;
   }
 
@@ -49,14 +68,19 @@ class MalKeyWord extends MalValue {
 }
 
 class MalFunction extends MalValue {
-  constructor(doForms, binds, env) {
+  constructor(doForms, binds, env, closureFun = ()=>{}) {
     super(doForms);
     this.value = doForms;
     this.binds = binds;
     this.env = env;
+    this.fn = closureFun;
   }
 
-  toString() {
+  apply(ctx, args) {
+    return this.fn.apply(null, args);
+  }
+
+  pr_str() {
     return "#<function>";
   }
 
@@ -76,26 +100,6 @@ class MalIterator extends MalValue {
 
   isEqual(otherValue) {
     return otherValue instanceof MalIterator && isDeepStrictEqual(otherValue.value, this.value);
-  //   if (!(otherValue instanceof MalIterator)) {
-  //     return false;
-  //   }
-    
-  //   if (!(otherValue.value.length === this.value.length)) {
-  //     return false;
-  //   }
-
-  //   let result = true;
-  //   let index = 0;
-  //   while (result === true && index < this.value.length) {
-  //     if (this.value[index] instanceof MalIterator) {
-  //       result &= this.value[index].isEqual(otherValue.value[index]);
-  //     }
-  //     else {
-  //       result &= isDeepStrictEqual(otherValue.value, this.value);
-  //     }
-  //     index++;
-  //   }
-  //   return result;
   }
 }
 
@@ -127,10 +131,10 @@ class MalMap extends MalIterator {
     return this.getValue(arg);
   }
 
-  toString() {
+  pr_str() {
     return "{" + this.value.map(x =>
     {
-      if (x instanceof MalValue) return x.toString();
+      if (x instanceof MalValue) return x.pr_str();
       return x.toString();
     }).join(" ") + "}";
   }
@@ -141,10 +145,10 @@ class MalVector extends MalIterator {
     super(value)
   }
 
-  toString() {
+  pr_str() {
     return "[" + this.value.map(x =>
     {
-      if (x instanceof MalValue) return x.toString();
+      if (x instanceof MalValue) return x.pr_str();
       return x.toString();
     }).join(" ") + "]";
   }
@@ -155,10 +159,10 @@ class MalList extends MalIterator {
     super(value)
   }
 
-  toString() {
+  pr_str() {
     return "(" + this.value.map(x =>
     {
-      if (x instanceof MalValue) return x.toString();
+      if (x instanceof MalValue) return x.pr_str();
       return x.toString();
     }).join(" ") + ")";
   }
@@ -170,7 +174,7 @@ class MalNil extends MalValue {
     this.value = null;
   }
 
-  toString() {
+  pr_str() {
     return "nil"
   }
 
@@ -179,21 +183,36 @@ class MalNil extends MalValue {
   }
 }
 
-class MalBool extends MalValue {
+class MalAtom extends MalValue {
   constructor(value) {
-   super(value);
+    super(value);
   }
 
-  toString() {
-    return this.value.toString();
+  reset(newValue) {
+    this.value = newValue;
+    return newValue;
   }
 
-  isEqual(otherValue) {
-    return otherValue instanceof MalBool && otherValue.value === this.value;
+  deref() {
+    return this.value;
+  }
+
+  swap(f, args) {
+    let func = f;
+    if (f instanceof MalFunction) {
+      func = f.fn;
+    }
+
+    this.value = func.apply(null, [this.value, ...args]);
+    return this.value;
+  }
+
+  pr_str() {
+    return "(atom " + this.value + ")";
   }
 }
 
 module.exports = {
-  MalSymbol, MalValue, MalList, MalVector, MalNil, MalBool, MalMap, MalString, MalKeyWord,
-  MalFunction, MalIterator
+  MalSymbol, MalValue, MalList, MalVector, MalNil, MalMap, MalString, MalKeyWord,
+  MalFunction, MalIterator, MalAtom, pr_str
 };

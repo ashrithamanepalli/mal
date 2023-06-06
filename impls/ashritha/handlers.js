@@ -36,11 +36,18 @@ const handleDo = (ast, env, eval) => {
   return ast.value.slice(-1)[0];
 };
 
-const handleFn = (ast, env) => {
+const handleFn = (ast, env, eval) => {
   const [binds, ...exprs] = ast.value.slice(1);
   const doForms = new MalList([new MalSymbol("do"), ...exprs]);
 
-  return new MalFunction(doForms, binds, env);
+  const func = (...args) => {
+    const [, binds, exprs] = ast.value;
+    const fnEnv = new Env(env, binds.value, exprs);
+    fnEnv.bind(args);
+    return eval(exprs, fnEnv);
+  }
+
+  return new MalFunction(doForms, binds, env, func);
 }
 
 const handleDef = (ast, env, eval) => {
