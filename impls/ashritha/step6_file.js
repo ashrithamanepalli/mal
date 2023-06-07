@@ -79,7 +79,7 @@ const setEnv = () => {
 const env = setEnv();
 
 const rep = arguments => PRINT(EVAL(READ(arguments), env));
-rep('(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) " nil)")))))');
+rep('(def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))');
 
 const rl = readline.createInterface(
   {
