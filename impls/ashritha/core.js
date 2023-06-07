@@ -1,7 +1,7 @@
 const fs = require('fs');
 const {pr_str} = require('./printer');
 const { read_str } = require("./reader");
-const { MalList, MalMap, MalNil, MalString, MalValue, MalIterator, MalAtom } = require("./types");
+const { MalList, MalMap, MalNil, MalString, MalValue, MalIterator, MalAtom, MalVector } = require("./types");
 
 const multipleCheck = (args, predicate) => {
   const result = [];
@@ -71,9 +71,9 @@ println : (...args) => {
 "pr-str": (...args) => {
   return pr_str(new MalString(args.map(x => pr_str(x, true)).join(" ")), true)
 },
-  "read-string": string => {
-    return read_str(string.value);
-  },
+"read-string": string => {
+  return read_str(string.value);
+},
 
 slurp: filename => new MalString(fs.readFileSync(filename.value, "utf8")),
 
@@ -81,7 +81,11 @@ atom: value => new MalAtom(value),
 deref: atom => atom.deref(),
 "atom?": value => value instanceof MalAtom,
 "reset!": (atom, value) => atom.reset(value),
-"swap!": (atom, fn, ...args) => atom.swap(fn, args)
+"swap!": (atom, fn, ...args) => atom.swap(fn, args),
+cons : (value, list) => new MalList([value, ...list.value]),
+  concat: (...lists) => new MalList(lists.flatMap(x => x.value)),
+  vec: (args) => new MalVector(args.value),
+  "to-map": (args) => new MalMap(args.value),
 }
 
 module.exports = { ns };

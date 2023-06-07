@@ -1,8 +1,8 @@
 const { isDeepStrictEqual } = require("util");
 
 const pr_str = malValue => {
-  // console.log(malValue);
   if (malValue instanceof MalValue) {
+    // console.log(malValue);
     return malValue.pr_str(true);
   }
 
@@ -43,6 +43,7 @@ class MalString extends MalValue {
   }
 
   pr_str(print_readably = false) {
+    console.log(print_readably);
     if (print_readably) {
       return '"' + this.value
         .replace(/\\/g, "\\\\")
@@ -92,6 +93,10 @@ class MalFunction extends MalValue {
 class MalIterator extends MalValue {
   constructor(value) {
     super(value);
+  }
+
+  beginsWith(token) {
+    return this.value.length > 0 && this.value[0].value === token;
   }
 
   isEmpty() {

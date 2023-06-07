@@ -37,7 +37,7 @@ const read_atom = reader => {
   const digitRegex = /^-?[\d]+$/;
   const floatRegex = /^-?[\d]+.[\d]+$/;
   const keywordRegex = /^:.*/;
-  const stringRegex = /^".*"?$/;
+  // const stringRegex = /^".*"?$/;
 
   if (token.match(digitRegex)) {
     return parseInt(token);
@@ -47,7 +47,7 @@ const read_atom = reader => {
     return parseFloat(token);
   }
   
-  if (token.match(stringRegex)) {
+  if (token.startsWith('"')) {
     return createMalString(token.slice(1, -1));
   }
   
@@ -116,7 +116,7 @@ const prependSymbol = (reader, symbolStr) => {
 
 const read_form = (reader) => {
   const token = reader.peek();
-  switch (token[0]) {
+  switch (token) {
     case "(":
       return read_list(reader);
     case "[":
@@ -125,6 +125,14 @@ const read_form = (reader) => {
       return read_map(reader);
     case "@":
       return prependSymbol(reader, 'deref');
+    case "'":
+      return prependSymbol(reader, 'quote');
+    case "`":
+      return prependSymbol(reader, 'quasiquote');
+    case "~":
+      return prependSymbol(reader, 'unquote');
+    case "~@":
+      return prependSymbol(reader, 'splice-unquote');
     default:
       return read_atom(reader);
   }
