@@ -69,12 +69,13 @@ class MalKeyWord extends MalValue {
 }
 
 class MalFunction extends MalValue {
-  constructor(doForms, binds, env, closureFun = ()=>{}) {
+  constructor(doForms, binds, env, closureFun, isMacro = false) {
     super(doForms);
     this.value = doForms;
     this.binds = binds;
     this.env = env;
     this.fn = closureFun;
+    this.isMacro = isMacro;
   }
 
   apply(ctx, args) {
@@ -93,6 +94,24 @@ class MalFunction extends MalValue {
 class MalIterator extends MalValue {
   constructor(value) {
     super(value);
+  }
+
+  nth(n) {
+    if (n >= this.value.length) {
+      throw "index out of range";
+    }
+    return this.value[n];
+  }
+  
+  first() {
+    if (this.value.length < 1) {
+      return new MalNil();
+    }
+    return this.value[0];
+  }
+
+  rest() {
+    return new MalList(this.value.slice(1));
   }
 
   beginsWith(token) {

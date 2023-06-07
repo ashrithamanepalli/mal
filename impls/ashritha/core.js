@@ -48,7 +48,7 @@ not : arg => {
   }
   return false;
 },
-count : arg => {
+  count: arg => {
   if (arg instanceof MalMap) {
     return arg.value.length / 2;
   }
@@ -83,9 +83,12 @@ deref: atom => atom.deref(),
 "reset!": (atom, value) => atom.reset(value),
 "swap!": (atom, fn, ...args) => atom.swap(fn, args),
 cons : (value, list) => new MalList([value, ...list.value]),
-  concat: (...lists) => new MalList(lists.flatMap(x => x.value)),
-  vec: (args) => new MalVector(args.value),
-  "to-map": (args) => new MalMap(args.value),
+concat: (...lists) => new MalList(lists.flatMap(x => x.value)),
+vec: (args) => new MalVector(args.value),
+"to-map": (args) => new MalMap(args.value),
+nth: (list, n) => list.nth(n),
+first: (list) => list instanceof MalNil ? new MalNil() : list.first(),
+rest: (list) => list instanceof MalNil ? new MalList([]) : list.rest(),
 }
 
 module.exports = { ns };

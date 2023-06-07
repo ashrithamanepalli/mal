@@ -37,7 +37,6 @@ const read_atom = reader => {
   const digitRegex = /^-?[\d]+$/;
   const floatRegex = /^-?[\d]+.[\d]+$/;
   const keywordRegex = /^:.*/;
-  // const stringRegex = /^".*"?$/;
 
   if (token.match(digitRegex)) {
     return parseInt(token);
